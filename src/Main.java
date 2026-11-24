@@ -1,4 +1,5 @@
 import controller.PlanejadorController;
+import model.Persistencia;
 import model.Repositorio;
 import view.TelaPrincipal;
 
@@ -10,8 +11,8 @@ public class Main {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                Repositorio repositorio = new Repositorio();
-                PlanejadorController controller = new PlanejadorController(repositorio);
+                Persistencia persistencia = new Repositorio();
+                PlanejadorController controller = new PlanejadorController(persistencia);
                 TelaPrincipal tela = new TelaPrincipal(controller);
                 tela.setVisible(true);
                 tela.carregarDadosIniciais();

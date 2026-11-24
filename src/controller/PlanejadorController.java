@@ -1,8 +1,8 @@
 package controller;
 
 import model.Participante;
+import model.Persistencia;
 import model.Planejamento;
-import model.Repositorio;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,48 +12,51 @@ import java.util.List;
 import java.util.Map;
 
 public class PlanejadorController {
-    private final Repositorio repositorio;
+    private final Persistencia persistencia;
 
-    public PlanejadorController(Repositorio repositorio) {
-        this.repositorio = repositorio;
+    public PlanejadorController(Persistencia persistencia) {
+        if (persistencia == null) {
+            throw new IllegalArgumentException("Persistência inválida");
+        }
+        this.persistencia = persistencia;
     }
 
     public void carregarArquivoPadrao() throws IOException {
-        repositorio.carregar();
+        persistencia.carregar();
     }
 
     public void carregarArquivo(File arquivo) throws IOException {
-        repositorio.carregar(arquivo);
+        persistencia.carregar(arquivo);
     }
 
     public void salvarArquivoComo(File arquivo) throws IOException {
-        repositorio.salvar(arquivo);
+        persistencia.salvar(arquivo);
     }
 
     public void iniciarPlanejamentoVazio() {
-        repositorio.iniciarVazio();
+        persistencia.iniciarVazio();
     }
 
     public void iniciarNovoArquivoVazio(File novoArquivo) throws IOException {
-        repositorio.iniciarNovoArquivo(novoArquivo);
+        persistencia.iniciarNovoArquivo(novoArquivo);
     }
 
     public String getCaminhoArquivoAtual() {
-        return repositorio.getCaminhoArquivo();
+        return persistencia.getCaminhoArquivo();
     }
 
     public Participante cadastrarParticipante(String nome, BigDecimal orcamento) {
         Participante participante = new Participante(nome, orcamento);
-        repositorio.addParticipante(participante);
+        persistencia.addParticipante(participante);
         return participante;
     }
 
     public List<Participante> listarParticipantes() {
-        return new ArrayList<>(repositorio.getParticipantes().values());
+        return new ArrayList<>(persistencia.getParticipantes().values());
     }
 
     public Participante buscarParticipante(int codigoParticipante) {
-        return repositorio.buscarParticipante(codigoParticipante);
+        return persistencia.buscarParticipante(codigoParticipante);
     }
 
     public void editarParticipante(int codigoParticipante, String novoNome, BigDecimal novoOrcamento) {
@@ -64,73 +67,73 @@ public class PlanejadorController {
             throw new IllegalArgumentException("Valor de orçamento inválido");
         }
 
-        Participante participante = repositorio.buscarParticipante(codigoParticipante);
+        Participante participante = persistencia.buscarParticipante(codigoParticipante);
         if (participante == null) {
             throw new IllegalArgumentException("Participante não encontrado");
         }
 
         participante.setNome(novoNome);
         participante.setOrcamento(novoOrcamento);
-        repositorio.salvar();
+        persistencia.salvar();
     }
 
     public boolean removerParticipante(int codigoParticipante) {
-        return repositorio.removerParticipante(codigoParticipante);
+        return persistencia.removerParticipante(codigoParticipante);
     }
 
     public Planejamento criarPlanejamento(String titulo) {
         Planejamento planejamento = new Planejamento(titulo);
-        repositorio.addPlanejamento(planejamento);
+        persistencia.addPlanejamento(planejamento);
         return planejamento;
     }
 
     public List<Planejamento> listarPlanejamentos() {
-        return new ArrayList<>(repositorio.getPlanejamentos().values());
+        return new ArrayList<>(persistencia.getPlanejamentos().values());
     }
 
     public Planejamento buscarPlanejamento(int codigoPlanejamento) {
-        return repositorio.buscarPlanejamento(codigoPlanejamento);
+        return persistencia.buscarPlanejamento(codigoPlanejamento);
     }
 
     public boolean removerPlanejamento(int codigoPlanejamento) {
-        return repositorio.removerPlanejamento(codigoPlanejamento);
+        return persistencia.removerPlanejamento(codigoPlanejamento);
     }
 
     public void adicionarDespesa(int codigoPlanejamento, String tipo, String descricao,
                                  BigDecimal valor, List<Integer> codigosParticipantes) {
-        Planejamento planejamento = repositorio.buscarPlanejamento(codigoPlanejamento);
+        Planejamento planejamento = persistencia.buscarPlanejamento(codigoPlanejamento);
         if (planejamento == null) {
             throw new IllegalArgumentException("Selecione um planejamento válido");
         }
 
         Participante[] participantes = resolverParticipantes(codigosParticipantes);
         planejamento.addDespesa(tipo, descricao, valor, participantes);
-        repositorio.salvar();
+        persistencia.salvar();
     }
 
     public void editarDespesa(int codigoPlanejamento, int codigoDespesa, String novaDescricao,
                               BigDecimal novoValor, List<Integer> codigosParticipantes) {
-        Planejamento planejamento = repositorio.buscarPlanejamento(codigoPlanejamento);
+        Planejamento planejamento = persistencia.buscarPlanejamento(codigoPlanejamento);
         if (planejamento == null) {
             throw new IllegalArgumentException("Selecione um planejamento válido");
         }
 
         Participante[] participantes = resolverParticipantes(codigosParticipantes);
         planejamento.editarDespesa(codigoDespesa, novaDescricao, novoValor, participantes);
-        repositorio.salvar();
+        persistencia.salvar();
     }
 
     public void removerDespesa(int codigoPlanejamento, int codigoDespesa) {
-        Planejamento planejamento = repositorio.buscarPlanejamento(codigoPlanejamento);
+        Planejamento planejamento = persistencia.buscarPlanejamento(codigoPlanejamento);
         if (planejamento == null) {
             throw new IllegalArgumentException("Selecione um planejamento válido");
         }
         planejamento.removerDespesa(codigoDespesa);
-        repositorio.salvar();
+        persistencia.salvar();
     }
 
     public Map<String, Object> gerarResumo(int codigoPlanejamento) {
-        Planejamento planejamento = repositorio.buscarPlanejamento(codigoPlanejamento);
+        Planejamento planejamento = persistencia.buscarPlanejamento(codigoPlanejamento);
         if (planejamento == null) {
             return null;
         }
@@ -140,7 +143,7 @@ public class PlanejadorController {
     private Participante[] resolverParticipantes(List<Integer> codigosParticipantes) {
         Participante[] participantes = new Participante[codigosParticipantes.size()];
         for (int i = 0; i < codigosParticipantes.size(); i++) {
-            Participante p = repositorio.buscarParticipante(codigosParticipantes.get(i));
+            Participante p = persistencia.buscarParticipante(codigosParticipantes.get(i));
             if (p == null) {
                 throw new IllegalArgumentException("Participante inválido selecionado");
             }
@@ -149,7 +152,7 @@ public class PlanejadorController {
         return participantes;
     }
 
-    public Repositorio getRepositorio() {
-        return repositorio;
+    public Persistencia getPersistencia() {
+        return persistencia;
     }
 }

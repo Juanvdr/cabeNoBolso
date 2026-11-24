@@ -55,7 +55,7 @@ public class DespesaPorPessoa extends Despesa {
     }
 
     public void setValorPorPessoa(BigDecimal valorPorPessoa) {
-        if (valorPorPessoa == null || valorPorPessoa.compareTo(BigDecimal.ZERO) < 0) {
+        if (valorPorPessoa == null || valorPorPessoa.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Valor de despesa inválido");
         }
         this.valorPorPessoa = valorPorPessoa;

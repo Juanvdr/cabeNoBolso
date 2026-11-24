@@ -13,7 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Repositorio {
+public class Repositorio implements Persistencia {
     private String caminhoArquivo;
     private Map<Integer, Participante> participantes = new LinkedHashMap<>();
     private Map<Integer, Planejamento> planejamentos = new LinkedHashMap<>();
@@ -26,6 +26,7 @@ public class Repositorio {
         this.caminhoArquivo = caminhoArquivo;
     }
 
+    @Override
     public void addParticipante(Participante participante) {
         if (participante == null) {
             throw new IllegalArgumentException("Participante inválido");
@@ -34,15 +35,26 @@ public class Repositorio {
         salvar();
     }
 
+    @Override
     public Map<Integer, Participante> getParticipantes() {
         return Collections.unmodifiableMap(participantes);
     }
 
+    @Override
     public Participante buscarParticipante(int codigo_unico_participante) {
         return participantes.get(codigo_unico_participante);
     }
 
+    @Override
     public boolean removerParticipante(int codigo_unico_participante) {
+        if (!participantes.containsKey(codigo_unico_participante)) {
+            return false;
+        }
+        if (participanteAssociadoADespesa(codigo_unico_participante)) {
+            throw new IllegalArgumentException(
+                    "Não é possível remover o participante pois ele está associado a uma ou mais despesas."
+            );
+        }
         boolean removido = participantes.remove(codigo_unico_participante) != null;
         if (removido) {
             salvar();
@@ -50,6 +62,20 @@ public class Repositorio {
         return removido;
     }
 
+    private boolean participanteAssociadoADespesa(int codigoParticipante) {
+        for (Planejamento planejamento : planejamentos.values()) {
+            for (Despesa despesa : planejamento.getDespesas()) {
+                for (Participante p : despesa.getParticipantes()) {
+                    if (p != null && p.getCodigo_unico_participante() == codigoParticipante) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
     public void addPlanejamento(Planejamento planejamento) {
         if (planejamento == null) {
             throw new IllegalArgumentException("Planejamento inválido");
@@ -58,14 +84,17 @@ public class Repositorio {
         salvar();
     }
 
+    @Override
     public Map<Integer, Planejamento> getPlanejamentos() {
         return Collections.unmodifiableMap(planejamentos);
     }
 
+    @Override
     public Planejamento buscarPlanejamento(int codigo_unico_planejamento) {
         return planejamentos.get(codigo_unico_planejamento);
     }
 
+    @Override
     public boolean removerPlanejamento(int codigo_unico_planejamento) {
         boolean removido = planejamentos.remove(codigo_unico_planejamento) != null;
         if (removido) {
@@ -74,11 +103,13 @@ public class Repositorio {
         return removido;
     }
 
+    @Override
     public void iniciarVazio() {
         this.participantes = new LinkedHashMap<>();
         this.planejamentos = new LinkedHashMap<>();
     }
 
+    @Override
     public void iniciarNovoArquivo(File novoArquivo) throws IOException {
         if (novoArquivo == null) {
             throw new IOException("Arquivo de destino inválido.");
@@ -99,10 +130,12 @@ public class Repositorio {
         }
     }
 
+    @Override
     public String getCaminhoArquivo() {
         return caminhoArquivo;
     }
 
+    @Override
     public void salvar() {
         try {
             salvar(new File(caminhoArquivo));
@@ -111,21 +144,25 @@ public class Repositorio {
         }
     }
 
+    @Override
     public void salvar(File arquivo) throws IOException {
         if (arquivo == null) {
             throw new IOException("Arquivo de destino inválido.");
         }
-        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(arquivo))) {
+        try (FileOutputStream fos = new FileOutputStream(arquivo);
+             ObjectOutputStream out = new ObjectOutputStream(fos)) {
             out.writeObject(participantes);
             out.writeObject(planejamentos);
             this.caminhoArquivo = arquivo.getPath();
         }
     }
 
+    @Override
     public void carregar() throws IOException {
         carregar(new File(caminhoArquivo));
     }
 
+    @Override
     public void carregar(File arquivo) throws IOException {
         if (arquivo == null || !arquivo.exists() || !arquivo.isFile()) {
             String nome = (arquivo == null) ? "nulo" : arquivo.getPath();
@@ -135,7 +172,8 @@ public class Repositorio {
         Map<Integer, Participante> novosParticipantes;
         Map<Integer, Planejamento> novosPlanejamentos;
 
-        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(arquivo))) {
+        try (FileInputStream fis = new FileInputStream(arquivo);
+             ObjectInputStream in = new ObjectInputStream(fis)) {
             Object objParticipantes = in.readObject();
             Object objPlanejamentos = in.readObject();
 

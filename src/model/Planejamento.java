@@ -56,7 +56,7 @@ public class Planejamento implements Serializable {
         if (novaDescricao == null || novaDescricao.trim().isEmpty()) {
             throw new IllegalArgumentException("Informe a descrição da despesa");
         }
-        if (novoValor == null || novoValor.compareTo(BigDecimal.ZERO) < 0) {
+        if (novoValor == null || novoValor.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Valor de despesa inválido");
         }
         if (novosParticipantes == null || novosParticipantes.length == 0) {
@@ -117,9 +117,15 @@ public class Planejamento implements Serializable {
                 totalParticipante = totalParticipante.add(valorNaDespesa);
             }
 
+            boolean orcamentoOk = participante.orcamentoOk(totalParticipante);
+            BigDecimal valorExcedido = orcamentoOk
+                    ? new BigDecimal("0.00")
+                    : totalParticipante.subtract(participante.getOrcamento());
+
             linhaParticipante.put("valoresPorDespesa", valoresPorDespesa);
             linhaParticipante.put("total", totalParticipante);
-            linhaParticipante.put("orcamentoOk", participante.orcamentoOk(totalParticipante));
+            linhaParticipante.put("orcamentoOk", orcamentoOk);
+            linhaParticipante.put("valorExcedido", valorExcedido);
             valoresPorParticipante.add(linhaParticipante);
         }
 

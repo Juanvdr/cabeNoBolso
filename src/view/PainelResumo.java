@@ -202,6 +202,7 @@ public class PainelResumo extends JPanel {
             Map<Integer, BigDecimal> valoresPorDespesa = (Map<Integer, BigDecimal>) linha.get("valoresPorDespesa");
             BigDecimal totalPessoa = (BigDecimal) linha.get("total");
             boolean orcamentoOk = (boolean) linha.get("orcamentoOk");
+            BigDecimal valorExcedido = (BigDecimal) linha.get("valorExcedido");
 
             Object[] dadosLinha = new Object[despesas.size() + 3];
             dadosLinha[0] = nome;
@@ -213,7 +214,9 @@ public class PainelResumo extends JPanel {
             }
 
             dadosLinha[despesas.size() + 1] = formatoMoeda.format(totalPessoa);
-            dadosLinha[despesas.size() + 2] = orcamentoOk ? "OK" : "Excedido";
+            dadosLinha[despesas.size() + 2] = orcamentoOk
+                    ? "OK"
+                    : "Excedido em " + formatoMoeda.format(valorExcedido);
 
             modeloTabelaParticipantes.addRow(dadosLinha);
         }

@@ -237,8 +237,17 @@ public class PainelParticipantes extends JPanel {
         );
 
         if (confirmacao == JOptionPane.YES_OPTION) {
-            controller.removerParticipante(codigo);
-            atualizarTabela();
+            try {
+                controller.removerParticipante(codigo);
+                atualizarTabela();
+            } catch (IllegalArgumentException ex) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        ex.getMessage(),
+                        "Remoção bloqueada",
+                        JOptionPane.WARNING_MESSAGE
+                );
+            }
         }
     }
 

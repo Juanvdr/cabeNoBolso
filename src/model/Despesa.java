@@ -16,7 +16,7 @@ public abstract class Despesa implements Serializable {
         if (descricao == null || descricao.trim().isEmpty()) {
             throw new IllegalArgumentException("Informe a descrição da despesa");
         }
-        if (valor == null || valor.compareTo(BigDecimal.ZERO) < 0) {
+        if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Valor de despesa inválido");
         }
         if (participantes == null || participantes.length == 0) {
@@ -51,7 +51,7 @@ public abstract class Despesa implements Serializable {
     }
 
     public void setValor(BigDecimal novoValor) {
-        if (novoValor == null || novoValor.compareTo(BigDecimal.ZERO) < 0) {
+        if (novoValor == null || novoValor.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Valor de despesa inválido");
         }
         this.valor = novoValor;
